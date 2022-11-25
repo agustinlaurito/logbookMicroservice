@@ -1,5 +1,5 @@
 module.exports = {
-    port: process.env.PORT || 3001,
+    port: process.env.PORT || 3002,
     connOpts: {
         defaultTimeout: 14000
     },
