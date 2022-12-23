@@ -4,12 +4,46 @@ const P = require('bluebird');
 const { initializeApp, applicationDefault, cert, getApps, getApp } = require('firebase-admin/app');
 const { getFirestore, Timestamp, FieldValue } = require('firebase-admin/firestore');
 const { v4: uuidv4 } = require('uuid');
+const errors = require('http-errors');
+const _ = require('lodash');
 
 const ACCOUNT = require('../../../credentials/logbook-avolar-testing-firebase-adminsdk-ks9ys-626cd2d7a3.json');
 
 class Route extends Base{
 
      validate(req){
+
+          if(_.isEmpty(req.body.date)){
+               throw new errors.BadRequest('Bad request. Please set date.');
+          }
+          if(_.isDate(req.body.date)){
+               throw new errors.BadRequest('Bad request. Please set a valid date.');
+          }
+          if(_.isEmpty(req.body.departureDate)){
+               throw new errors.BadRequest('Bad request. Please set departureDate.');
+          }
+          if(_.isEmpty(req.body.arrivalDate)){
+               throw new errors.BadRequest('Bad request. Please set arrivalDate.');
+          }
+          if(_.isEmpty(req.body.departureAirport)){
+               throw new errors.BadRequest('Bad request. Please set from.');
+          }
+          if(_.isEmpty(req.body.arrivalAirport)){
+               throw new errors.BadRequest('Bad request. Please set to.');
+          }
+          if(_.isEmpty(req.body.purpose)){
+               throw new errors.BadRequest('Bad request. Please set purpose.');
+          }
+          if(_.isEmpty(req.body.aircraft)){
+               throw new errors.BadRequest('Bad request. Please set aircraft.');
+          }
+          if(_.isEmpty(req.body.times)){
+               throw new errors.BadRequest('Bad request. Please set times.');
+          }
+          if(_.isEmpty(req.body.landings)){
+               throw new errors.BadRequest('Bad request. Please set landings.');
+          }
+          console.log(req.body);
           return P.resolve();
      }
 
@@ -18,13 +52,13 @@ class Route extends Base{
           const context = {
                idUser: req.params.id,
                date: req.body.date,
-               depTime: req.body.depTime,
-               arrTime: req.body.arrTime,
-               from: req.body.from,
-               to: req.body.to,
+               departureDate: req.body.departureDate,
+               arrivalDate: req.body.arrivalDate,
+               departureAirport: req.body.departureAirport,
+               arrivalAirport: req.body.arrivalAirport,
                purpose: req.body.purpose,
                aircraft: req.body.aircraft,
-               computed: req.body.computed,
+               times: req.body.times,
                landings: req.body.landings
           }
           
@@ -46,16 +80,20 @@ class Route extends Base{
      save(context){
           const data = {
                date: context.date,
-               depTime: context.depTime,
-               arrTime: context.arrTime,
-               from: context.from,
-               to: context.to,
+               departureDate: context.departureDate,
+               arrivalDate: context.arrivalDate,
+               departureAirport: context.departureAirport,
+               arrivalAirport: context.arrivalAirport,
                purpose: context.purpose,
                aircraft: context.aircraft,
-               computed: context.computed,
-               landings: context.landings
+               times: context.times,
+               landings: context.landings,
+               createdAt: Timestamp.now(),   
           }
-          return context.docRef.set(data); 
+          return context.docRef.set(data)
+               .then((res) => {
+                    return {...data, ...res};
+               });
      }
 }
 
